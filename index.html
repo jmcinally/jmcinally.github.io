@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jamie McInally — Knowledge Architect | L&D Strategist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inria+Serif:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           hsl(30, 15%, 6%);
+      --fg:           hsl(35, 20%, 90%);
+      --muted:        hsl(30, 10%, 55%);
+      --card:         hsl(30, 10%, 10%);
+      --secondary:    hsl(30, 8%, 16%);
+      --border:       hsl(30, 8%, 18%);
+      --primary:      hsl(35, 80%, 65%);
+      --primary-fg:   hsl(30, 15%, 6%);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      overflow: hidden;
+    }
+
+    /* ── Grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.4;
+    }
+
+    /* ── Snap container ── */
+    #snap-container {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y proximity;
+      scroll-behavior: smooth;
+    }
+
+    /* ── Sections ── */
+    section {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 1.5rem;
+    }
+
+    /* ── Typography ── */
+    h1, h2 {
+      font-family: 'Inria Serif', serif;
+      font-weight: 400;
+      letter-spacing: 0;
+      color: var(--fg);
+    }
+
+    h1 { font-size: clamp(2.2rem, 6vw, 3.5rem); line-height: 1.15; }
+    h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); line-height: 1.2; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: var(--primary-fg);
+      border: none;
+      border-radius: 9999px;
+      padding: 0.75rem 2rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: gap 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      gap: 0.75rem;
+      box-shadow: 0 0 30px hsl(35 80% 65% / 0.3);
+    }
+
+    .btn-primary svg {
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-primary:hover svg {
+      transform: translate(2px, -2px);
+    }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 0.75rem 1.5rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.3s ease, color 0.3s ease;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* ── Scroll hint arrows ── */
+    .scroll-hint {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: hsl(30, 10%, 55%, 0.4);
+      padding: 0.5rem;
+      transition: color 0.3s ease, opacity 0.7s ease;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scroll-hint:hover { color: var(--primary); }
+    .scroll-hint.visible { opacity: 1; pointer-events: auto; }
+    .scroll-hint.down { bottom: 0.75rem; }
+    .scroll-hint.up   { top: 1.5rem; }
+
+    .scroll-hint svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ════════════════════════════════
+       HERO
+    ════════════════════════════════ */
+    #hero {
+      text-align: center;
+    }
+
+    .hero-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      max-width: 28rem;
+      width: 100%;
+    }
+
+    .hero-subtitle {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-top: 0.5rem;
+    }
+
+    .hero-body {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .hero-secondary-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    /* ════════════════════════════════
+       ABOUT
+    ════════════════════════════════ */
+    #about {
+      justify-content: flex-start;
+      padding-top: 6rem;
+      padding-bottom: 8rem;
+    }
+
+    @media (min-height: 700px) {
+      #about { justify-content: center; }
+    }
+
+    .about-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+      max-width: 56rem;
+      width: 100%;
+    }
+
+    .about-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+      width: 100%;
+    }
+
+    .about-text { flex: 1; }
+
+    .about-text h2 { margin-bottom: 1.5rem; }
+
+    .about-text p,
+    .about-bottom {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--muted);
+      text-align: justify;
+    }
+
+    .about-image {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .about-image img {
+      width: 16rem;
+      height: 16rem;
+      object-fit: cover;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .about-bottom {
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .about-top {
+        flex-direction: row;
+        align-items: center;
+        gap: 4rem;
+      }
+
+      .about-image img {
+        width: 20rem;
+        height: 20rem;
+      }
+    }
+
+    /* ════════════════════════════════
+       IMPACT
+    ════════════════════════════════ */
+    #impact {
+      padding-top: 6rem;
+      padding-bottom: 6rem;
+    }
+
+    .impact-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+      max-width: 56rem;
+      width: 100%;
+    }
+
+    .impact-inner h2 { text-align: center; }
+
+    .impact-hint {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--muted);
+      text-align: center;
+      margin-top: -1.5rem;
+    }
+
+    .circles-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    /* ── Flip card ── */
+    .circle-wrap {
+      width: 11rem;
+      height: 11rem;
+      perspective: 600px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    @media (min-width: 640px) {
+      .circle-wrap { width: 14rem; height: 14rem; }
+    }
+
+    .circle-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease;
+    }
+
+    .circle-wrap.flipped .circle-inner {
+      transform: rotateY(180deg);
+    }
+
+    .circle-front,
+    .circle-back {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      text-align: center;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .circle-front {
+      background: var(--secondary);
+      border: 1px solid var(--border);
+    }
+
+    .circle-front span {
+      font-family: 'Inria Serif', serif;
+      font-size: 1.1rem;
+      line-height: 1.3;
+      color: var(--fg);
+    }
+
+    @media (min-width: 640px) {
+      .circle-front span { font-size: 1.25rem; }
+    }
+
+    .circle-back {
+      background: var(--card);
+      border: 1px solid hsl(35 80% 65% / 0.4);
+      transform: rotateY(180deg);
+    }
+
+    .circle-back span {
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    @media (min-width: 640px) {
+      .circle-back span { font-size: 0.8rem; }
+    }
+
+    .impact-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div id="snap-container">
+
+  <!-- ════════════════════════════════
+       HERO
+  ════════════════════════════════ -->
+  <section id="hero">
+
+    <div class="hero-inner">
+      <div>
+        <h1>Jamie McInally</h1>
+        <p class="hero-subtitle">Knowledge Architect | L&amp;D Strategist</p>
+      </div>
+
+      <p class="hero-body">
+        Bridging the gap between learning and operations by designing scalable
+        knowledge ecosystems and high-impact L&amp;D strategies.
+      </p>
+      <p class="hero-body" style="margin-top:-1.25rem;">
+        Based in Cambridge, UK. Available worldwide.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="https://www.jmcinally.co.uk/portfolio-course" target="_blank" rel="noopener" class="btn-primary">
+          Portfolio
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+        </a>
+        <div class="hero-secondary-buttons">
+          <a href="http://www.linkedin.com/in/jamie-mcinally" target="_blank" rel="noopener" class="btn-outline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            LinkedIn
+          </a>
+          <a href="/cdn-cgi/l/email-protection#6f05020c06010e0303164118001d042f08020e0603410c0002" class="btn-outline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            Email
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <button class="scroll-hint down always-visible" data-target="about" aria-label="Scroll to About">
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+  </section>
+
+  <!-- ════════════════════════════════
+       ABOUT
+  ════════════════════════════════ -->
+  <section id="about">
+
+    <button class="scroll-hint up" data-target="hero" aria-label="Scroll to top">
+      <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+
+    <div class="about-inner">
+      <div class="about-top">
+        <div class="about-text">
+          <h2>About Me</h2>
+          <p>I specialize in building the "brains" of global organizations. With over 8 years of experience at Spotify and Multiverse, I architect systems that turn fragmented information into scalable, AI-ready knowledge. From launching international support hubs in Manila, Sofia and Montego Bay, to engineering custom AI content pipelines that save thousands of operational hours, my focus is always on the intersection of technical infrastructure and human performance. I don't just build documentation; I build ecosystems that empower teams to do their best work.</p>
+        </div>
+        <div class="about-image">
+          <img src="avatar.jpg" alt="Jamie McInally" />
+        </div>
+      </div>
+      <p class="about-bottom">I've always been obsessed with how things work — and how to explain them! When I'm not "industrializing" documentation pipelines or leading global system rollouts, you'll find me in my home lab. My house is a living network of Raspberry Pis and ESP32s running Home Assistant. I bring that same "maker" curiosity to my professional work, bridging the gap between complex engineering logic and user-centric clarity.</p>
+    </div>
+
+    <button class="scroll-hint down" data-target="impact" aria-label="Scroll to Impact">
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+  </section>
+
+  <!-- ════════════════════════════════
+       IMPACT
+  ════════════════════════════════ -->
+  <section id="impact">
+
+    <button class="scroll-hint up" data-target="about" aria-label="Scroll to About">
+      <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+
+    <div class="impact-inner">
+      <h2>My Impact</h2>
+      <p class="impact-hint">Click each circle to learn more.</p>
+
+      <div class="circles-grid">
+
+        <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="£720,000 Saved">
+          <div class="circle-inner">
+            <div class="circle-front"><span>£720,000 Saved</span></div>
+            <div class="circle-back"><span>200+ hours saved per month equating to £720,000 saved within the first quarter of launching a new knowledge architecture at Multiverse.</span></div>
+          </div>
+        </div>
+
+        <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="90% Faster Content">
+          <div class="circle-inner">
+            <div class="circle-front"><span>90% Faster Content</span></div>
+            <div class="circle-back"><span>Built agentic AI workflows for sales reps, reducing sales decks research and creation time from 150 minutes to 15, freeing up time to focus on client calls.</span></div>
+          </div>
+        </div>
+
+        <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="30 Hours Reclaimed">
+          <div class="circle-inner">
+            <div class="circle-front"><span>30 Hours Reclaimed</span></div>
+            <div class="circle-back"><span>Quarterly manual labour eliminated by developing a "ProofPoint Agent" that auto-generates collateral from learner impact data and Gong transcripts.</span></div>
+          </div>
+        </div>
+
+        <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="31% Faster Onboarding">
+          <div class="circle-inner">
+            <div class="circle-front"><span>31% Faster Onboarding</span></div>
+            <div class="circle-back"><span>Slashed ramp time at Spotify by cutting agendas down from five days to three, using AI case routing and curriculum.</span></div>
+          </div>
+        </div>
+
+        <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="11 Global Sites">
+          <div class="circle-inner">
+            <div class="circle-front"><span>11 Global Sites</span></div>
+            <div class="circle-back"><span>Led technical launches and TTT in Manila, Sofia, Montego Bay, and NYC for 5,000+ users.</span></div>
+          </div>
+        </div>
+
+        <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="60-Day M&A Integration">
+          <div class="circle-inner">
+            <div class="circle-front"><span>60-Day M&amp;A Integration</span></div>
+            <div class="circle-back"><span>Scaled all CS support processes, while developing and delivering the training agenda for Spotify's Soundtrap acquisition in under two months.</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="impact-footer">
+        For a more in-depth deep dive, check out my
+        <a href="https://www.jmcinally.co.uk/portfolio-course" target="_blank" rel="noopener" class="btn-primary" style="font-size:0.8rem; padding: 0.5rem 1.25rem;">
+          Portfolio Course
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+        </a>
+      </p>
+    </div>
+
+    <button class="scroll-hint up" data-target="about" aria-label="Scroll to About">
+      <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+
+  </section>
+
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const container = document.getElementById('snap-container');
+  const hints = document.querySelectorAll('.scroll-hint');
+  let scrollTimer = null;
+  let hasScrolled = false;
+
+  // Show arrows while scrolling, hide after idle
+  function onScroll() {
+    hasScrolled = true;
+    hints.forEach(h => {
+      if (!h.classList.contains('always-visible')) {
+        h.classList.add('visible');
+      }
+    });
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      hints.forEach(h => {
+        if (!h.classList.contains('always-visible')) {
+          h.classList.remove('visible');
+        }
+      });
+    }, 1200);
+  }
+
+  container.addEventListener('scroll', onScroll, { passive: true });
+
+  // The hero down arrow is always visible on arrival, then behaves normally after first scroll
+  const alwaysVisibleHints = document.querySelectorAll('.always-visible');
+  alwaysVisibleHints.forEach(h => h.classList.add('visible'));
+
+  container.addEventListener('scroll', function onFirstScroll() {
+    alwaysVisibleHints.forEach(h => h.classList.remove('always-visible'));
+    container.removeEventListener('scroll', onFirstScroll);
+  }, { passive: true });
+
+  // Click handlers for scroll hints
+  hints.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Keyboard support for circles
+  document.querySelectorAll('.circle-wrap').forEach(circle => {
+    circle.addEventListener('keydown', e => {
+      if (e.ke
