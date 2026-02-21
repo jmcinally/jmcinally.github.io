@@ -145,7 +145,7 @@
 
     .scroll-hint:hover { color: var(--primary); }
     .scroll-hint.visible { opacity: 1; pointer-events: auto; }
-    .scroll-hint.down { bottom: 0.75rem; }
+    .scroll-hint.down { bottom: 3rem; }
     .scroll-hint.up   { top: 1.5rem; }
 
     .scroll-hint svg {
@@ -156,6 +156,61 @@
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    /* ── Scroll to explore ── */
+    #scroll-to-explore {
+      position: absolute;
+      bottom: 7rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: hsl(30, 10%, 45%);
+      white-space: nowrap;
+      opacity: 1;
+      transition: opacity 0.7s ease;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #scroll-to-explore.hidden {
+      opacity: 0;
+    }
+
+    /* ── Progress dots ── */
+    #progress-dots {
+      position: fixed;
+      right: 1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      z-index: 50;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: hsl(30, 8%, 30%);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .dot.active {
+      background: var(--primary);
+      transform: scale(1.4);
+    }
+
+    .dot:hover {
+      background: hsl(35, 60%, 50%);
     }
 
     /* ════════════════════════════════
@@ -371,16 +426,20 @@
       background: var(--card);
       border: 1px solid hsl(35 80% 65% / 0.4);
       transform: rotateY(180deg);
+      padding: 0.75rem;
     }
 
     .circle-back span {
-      font-size: 0.72rem;
-      line-height: 1.6;
+      font-size: 0.65rem;
+      line-height: 1.5;
       color: var(--muted);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
     }
 
     @media (min-width: 640px) {
-      .circle-back span { font-size: 0.8rem; }
+      .circle-back span { font-size: 0.8rem; line-height: 1.6; }
     }
 
     .impact-footer {
@@ -396,6 +455,12 @@
   </style>
 </head>
 <body>
+
+<nav id="progress-dots" aria-label="Page navigation">
+  <button class="dot active" data-target="hero" aria-label="Hero"></button>
+  <button class="dot" data-target="about" aria-label="About"></button>
+  <button class="dot" data-target="impact" aria-label="Impact"></button>
+</nav>
 
 <div id="snap-container">
 
@@ -440,6 +505,10 @@
       <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
 
+    <!-- ↓ SCROLL TO EXPLORE — remove the block below if you decide you don't want it -->
+    <p id="scroll-to-explore">Scroll to explore</p>
+    <!-- ↑ end scroll to explore -->
+
   </section>
 
   <!-- ════════════════════════════════
@@ -461,7 +530,7 @@
           <img src="avatar.jpg" alt="Jamie McInally" />
         </div>
       </div>
-      <p class="about-bottom">I've always been obsessed with how things work and how to explain them in a simplest way possible! When I'm not "industrializing" documentation pipelines or leading global system rollouts, you'll find me in my home lab. My house is a living network of PCs, Raspberry Pis and ESP32s running Home Assistant and all manner of Docker containers. I bring that same "maker" curiosity to my professional work, bridging the gap between complex engineering logic and user-centric clarity.</p>
+      <p class="about-bottom">I've always been obsessed with how things work and how to explain them in a simplest way possible! When I'm not "industrializing" documentation pipelines or leading global system rollouts, you'll find me in my home lab. My house is a living network of PCs, Raspberry Pis and ESP32s running Home Assistant and all manner of Docker containers. I bring that same "maker" curiosity to my professional work, bridging the gap between complex engineering logic and user-centric clarity. </p>
     </div>
 
     <button class="scroll-hint down" data-target="impact" aria-label="Scroll to Impact">
@@ -495,7 +564,7 @@
         <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="90% Faster Content">
           <div class="circle-inner">
             <div class="circle-front"><span>90% Faster Content</span></div>
-            <div class="circle-back"><span>Built agentic AI workflows for sales reps, reducing sales decks research and creation time from 150 to just 15 minutes.</span></div>
+            <div class="circle-back"><span>Built agentic AI workflows for sales reps, reducing sales decks research and creation time from 150 minutes to 15, freeing up time to focus on client calls.</span></div>
           </div>
         </div>
 
@@ -546,42 +615,101 @@
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  const container = document.getElementById('snap-container');
-  const hints = document.querySelectorAll('.scroll-hint');
-  let scrollTimer = null;
-  let hasScrolled = false;
+<script>
+  const container  = document.getElementById('snap-container');
+  const hints      = document.querySelectorAll('.scroll-hint');
+  const heroArrow  = document.querySelector('#hero .scroll-hint.down');
+  const scrollText = document.getElementById('scroll-to-explore');
+  const dots       = document.querySelectorAll('.dot');
+  const sections   = ['hero', 'about', 'impact'];
+  let heroHasLeft  = false;   // tracks whether user has ever left the hero
+  let fadeTimers   = new Map();
 
-  // Show arrows while scrolling, hide after idle
-  function onScroll() {
-    hasScrolled = true;
-    hints.forEach(h => {
-      if (!h.classList.contains('always-visible')) {
-        h.classList.add('visible');
-      }
-    });
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => {
-      hints.forEach(h => {
-        if (!h.classList.contains('always-visible')) {
-          h.classList.remove('visible');
-        }
-      });
-    }, 1200);
+  // ── Show an arrow briefly then fade it out ──
+  function showBriefly(el, duration = 2500) {
+    if (!el) return;
+    el.classList.add('visible');
+    clearTimeout(fadeTimers.get(el));
+    fadeTimers.set(el, setTimeout(() => {
+      el.classList.remove('visible');
+    }, duration));
   }
 
-  container.addEventListener('scroll', onScroll, { passive: true });
+  // ── IntersectionObserver: fire on section entry ──
+  sections.forEach((id, i) => {
+    const section  = document.getElementById(id);
+    const downArrow = section.querySelector('.scroll-hint.down');
+    const upArrow   = section.querySelector('.scroll-hint.up');
 
-  // The hero down arrow is always visible on arrival, then behaves normally after first scroll
-  const alwaysVisibleHints = document.querySelectorAll('.always-visible');
-  alwaysVisibleHints.forEach(h => h.classList.add('visible'));
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+          // Leaving hero for the first time — demote the persistent arrow
+          if (id === 'hero' && !heroHasLeft) {
+            heroHasLeft = true;
+            heroArrow.classList.remove('visible');
+            clearTimeout(fadeTimers.get(heroArrow));
+          }
+          return;
+        }
 
-  container.addEventListener('scroll', function onFirstScroll() {
-    alwaysVisibleHints.forEach(h => h.classList.remove('always-visible'));
-    container.removeEventListener('scroll', onFirstScroll);
+        // Update active dot
+        dots.forEach(d => d.classList.remove('active'));
+        dots[i].classList.add('active');
+
+        // Hero on first arrival — keep arrow visible until they leave
+        if (id === 'hero' && !heroHasLeft) {
+          heroArrow.classList.add('visible');
+          return;
+        }
+
+        // All other arrivals — show briefly then fade
+        showBriefly(downArrow);
+        showBriefly(upArrow);
+      });
+    }, { root: container, threshold: 0.15 });
+
+    obs.observe(section);
+  });
+
+  // ── Anticipatory arrows: show when user is 70%+ through a section ──
+  container.addEventListener('scroll', () => {
+    const scrollTop = container.scrollTop;
+    const vh = container.clientHeight;
+
+    sections.forEach((id, i) => {
+      const section   = document.getElementById(id);
+      const progress  = (scrollTop - section.offsetTop) / vh; // 0 = top of section, 1 = fully scrolled past
+      const downArrow = section.querySelector('.scroll-hint.down');
+      const upArrow   = section.querySelector('.scroll-hint.up');
+
+      // Show down arrow when 70% through this section (approaching next)
+      if (progress > 0.5 && progress < 1) {
+        if (downArrow && !(id === 'hero' && !heroHasLeft)) {
+          showBriefly(downArrow, 1500);
+        }
+      }
+
+      // Show up arrow when scrolling back (section entering from bottom)
+      if (progress > -0.5 && progress < 0) {
+        if (upArrow) showBriefly(upArrow, 1500);
+      }
+    });
+  }, { passive: true });
+  container.addEventListener('scroll', function hideExplore() {
+    if (scrollText) scrollText.classList.add('hidden');
+    container.removeEventListener('scroll', hideExplore);
   }, { passive: true });
 
-  // Click handlers for scroll hints
+  // ── Dot click → scroll to section ──
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const target = document.getElementById(dot.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // ── Scroll hint click → scroll to target ──
   hints.forEach(btn => {
     btn.addEventListener('click', () => {
       const target = document.getElementById(btn.dataset.target);
@@ -589,7 +717,15 @@
     });
   });
 
-  // Keyboard support for circles
+  // ── Keyboard support for flip circles ──
   document.querySelectorAll('.circle-wrap').forEach(circle => {
     circle.addEventListener('keydown', e => {
-      if (e.ke
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        circle.classList.toggle('flipped');
+      }
+    });
+  });
+</script>-e 
+</body>
+</html>
