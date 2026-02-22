@@ -88,12 +88,13 @@
       font-weight: 500;
       text-decoration: none;
       cursor: pointer;
-      transition: gap 0.3s ease, box-shadow 0.3s ease;
+      transition: gap 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
     }
 
     .btn-primary:hover {
       gap: 0.75rem;
-      box-shadow: 0 0 30px hsl(35 80% 65% / 0.3);
+      background: hsl(35, 85%, 72%);
+      box-shadow: 0 0 20px hsl(35 80% 65% / 0.6), 0 0 50px hsl(35 80% 65% / 0.35), 0 0 90px hsl(35 80% 65% / 0.15);
     }
 
     .btn-primary svg {
@@ -119,12 +120,13 @@
       font-weight: 500;
       text-decoration: none;
       cursor: pointer;
-      transition: border-color 0.3s ease, color 0.3s ease;
+      transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .btn-outline:hover {
       border-color: var(--primary);
       color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary), inset 0 0 12px hsl(35 80% 65% / 0.06);
     }
 
     /* ── Scroll hint arrows ── */
@@ -369,8 +371,8 @@
 
     /* ── Flip card ── */
     .circle-wrap {
-      width: 11rem;
-      height: 11rem;
+      width: 13rem;
+      height: 13rem;
       perspective: 600px;
       cursor: pointer;
       flex-shrink: 0;
@@ -400,7 +402,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
       text-align: center;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
@@ -409,6 +410,13 @@
     .circle-front {
       background: var(--secondary);
       border: 1px solid var(--border);
+      padding: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .circle-wrap:hover .circle-front {
+      border-color: hsl(35 80% 65% / 0.5);
+      box-shadow: 0 0 20px hsl(35 80% 65% / 0.12);
     }
 
     .circle-front span {
@@ -426,20 +434,19 @@
       background: var(--card);
       border: 1px solid hsl(35 80% 65% / 0.4);
       transform: rotateY(180deg);
-      padding: 0.75rem;
+      padding: 18%;
+      overflow: hidden;
     }
 
     .circle-back span {
       font-size: 0.65rem;
-      line-height: 1.5;
+      line-height: 1.35;
       color: var(--muted);
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
+      display: block;
     }
 
     @media (min-width: 640px) {
-      .circle-back span { font-size: 0.8rem; line-height: 1.6; }
+      .circle-back span { font-size: 0.78rem; line-height: 1.45; }
     }
 
     .impact-footer {
@@ -493,7 +500,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
             LinkedIn
           </a>
-          <a href="/cdn-cgi/l/email-protection#6f05020c06010e0303164118001d042f08020e0603410c0002" class="btn-outline">
+          <a href="/cdn-cgi/l/email-protection#bed4d3ddd7d0dfd2d2c790c9d1ccd5fed9d3dfd7d290ddd1d3" class="btn-outline">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
             Email
           </a>
@@ -505,7 +512,9 @@
       <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
 
+    <!-- ↓ SCROLL TO EXPLORE — remove the block below if you decide you don't want it -->
     <p id="scroll-to-explore">Scroll to explore</p>
+    <!-- ↑ end scroll to explore -->
 
   </section>
 
@@ -590,7 +599,7 @@
         <div class="circle-wrap" onclick="this.classList.toggle('flipped')" role="button" tabindex="0" aria-label="60-Day M&A Integration">
           <div class="circle-inner">
             <div class="circle-front"><span>60-Day M&amp;A Integration</span></div>
-            <div class="circle-back"><span>Built and executed the Soundtrap integration curriculum in two months. Helped transform undocumented tasks into repeatable CS processes and personally led the global rollout with the inaugural class in Manila.</span></div>
+            <div class="circle-back"><span>Built the Soundtrap integration curriculum in two months & converted undocumented tasks into formal CS processes. Personally launched global ops by delivering the inaugural training in Manila.</span></div>
           </div>
         </div>
 
@@ -613,14 +622,14 @@
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const container  = document.getElementById('snap-container');
   const hints      = document.querySelectorAll('.scroll-hint');
   const heroArrow  = document.querySelector('#hero .scroll-hint.down');
   const scrollText = document.getElementById('scroll-to-explore');
   const dots       = document.querySelectorAll('.dot');
   const sections   = ['hero', 'about', 'impact'];
-  let heroHasLeft  = false;   // tracks whether user has ever left the hero
+  let heroHasLeft  = false;
   let fadeTimers   = new Map();
 
   // ── Show an arrow briefly then fade it out ──
@@ -635,14 +644,13 @@
 
   // ── IntersectionObserver: fire on section entry ──
   sections.forEach((id, i) => {
-    const section  = document.getElementById(id);
+    const section   = document.getElementById(id);
     const downArrow = section.querySelector('.scroll-hint.down');
     const upArrow   = section.querySelector('.scroll-hint.up');
 
     const obs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) {
-          // Leaving hero for the first time — demote the persistent arrow
           if (id === 'hero' && !heroHasLeft) {
             heroHasLeft = true;
             heroArrow.classList.remove('visible');
@@ -651,17 +659,14 @@
           return;
         }
 
-        // Update active dot
         dots.forEach(d => d.classList.remove('active'));
         dots[i].classList.add('active');
 
-        // Hero on first arrival — keep arrow visible until they leave
         if (id === 'hero' && !heroHasLeft) {
           heroArrow.classList.add('visible');
           return;
         }
 
-        // All other arrivals — show briefly then fade
         showBriefly(downArrow);
         showBriefly(upArrow);
       });
@@ -670,30 +675,30 @@
     obs.observe(section);
   });
 
-  // ── Anticipatory arrows: show when user is 70%+ through a section ──
+  // ── Anticipatory arrows: show when user is 50%+ through a section ──
   container.addEventListener('scroll', () => {
     const scrollTop = container.scrollTop;
     const vh = container.clientHeight;
 
-    sections.forEach((id, i) => {
+    sections.forEach((id) => {
       const section   = document.getElementById(id);
-      const progress  = (scrollTop - section.offsetTop) / vh; // 0 = top of section, 1 = fully scrolled past
+      const progress  = (scrollTop - section.offsetTop) / vh;
       const downArrow = section.querySelector('.scroll-hint.down');
       const upArrow   = section.querySelector('.scroll-hint.up');
 
-      // Show down arrow when 70% through this section (approaching next)
       if (progress > 0.5 && progress < 1) {
         if (downArrow && !(id === 'hero' && !heroHasLeft)) {
           showBriefly(downArrow, 1500);
         }
       }
 
-      // Show up arrow when scrolling back (section entering from bottom)
       if (progress > -0.5 && progress < 0) {
         if (upArrow) showBriefly(upArrow, 1500);
       }
     });
   }, { passive: true });
+
+  // ── Scroll to explore: hide after first scroll ──
   container.addEventListener('scroll', function hideExplore() {
     if (scrollText) scrollText.classList.add('hidden');
     container.removeEventListener('scroll', hideExplore);
@@ -718,12 +723,4 @@
   // ── Keyboard support for flip circles ──
   document.querySelectorAll('.circle-wrap').forEach(circle => {
     circle.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        circle.classList.toggle('flipped');
-      }
-    });
-  });
-</script>-e 
-</body>
-</html>
+      if (e.ke
