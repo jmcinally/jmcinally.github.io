@@ -147,7 +147,7 @@
 
     .scroll-hint:hover { color: var(--primary); }
     .scroll-hint.visible { opacity: 1; pointer-events: auto; }
-    .scroll-hint.down { bottom: 3rem; }
+    .scroll-hint.down { bottom: 5rem; }
     .scroll-hint.up   { top: 1.5rem; }
 
     .scroll-hint svg {
@@ -163,7 +163,7 @@
     /* ── Scroll to explore ── */
     #scroll-to-explore {
       position: absolute;
-      bottom: 7rem;
+      bottom: 8.5rem;
       left: 50%;
       transform: translateX(-50%);
       font-family: 'Inter', sans-serif;
@@ -220,13 +220,15 @@
     ════════════════════════════════ */
     #hero {
       text-align: center;
+      height: 100vh;
+      overflow: hidden;
     }
 
     .hero-inner {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2rem;
+      gap: 1.25rem;
       max-width: 28rem;
       width: 100%;
     }
@@ -252,7 +254,7 @@
       flex-direction: column;
       align-items: center;
       gap: 0.75rem;
-      margin-top: 0.5rem;
+      margin-top: 2.5rem;
     }
 
     .hero-secondary-buttons {
@@ -485,7 +487,8 @@
       <p class="hero-body">
         Bridging the gap between knowing and doing. I build the infrastructure for collective intelligence, by codifying complex workflows into searchable knowledge systems and transforming that data into high-impact learning journeys for global teams.
       </p>
-      <p class="hero-body" style="margin-top:-1.25rem;">
+
+      <p class="hero-body">
         Based in Cambridge, UK. Available worldwide.
       </p>
 
@@ -621,7 +624,7 @@
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   const container  = document.getElementById('snap-container');
   const hints      = document.querySelectorAll('.scroll-hint');
   const heroArrow  = document.querySelector('#hero .scroll-hint.down');
@@ -641,7 +644,10 @@
     }, duration));
   }
 
-  // ── IntersectionObserver: fire on section entry ──
+  // ── Show hero arrow immediately on page load ──
+  if (heroArrow) heroArrow.classList.add('visible');
+
+  // ── IntersectionObserver: fire on section entry/exit ──
   sections.forEach((id, i) => {
     const section   = document.getElementById(id);
     const downArrow = section.querySelector('.scroll-hint.down');
@@ -650,6 +656,7 @@
     const obs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) {
+          // Hero leaving viewport for the first time
           if (id === 'hero' && !heroHasLeft) {
             heroHasLeft = true;
             heroArrow.classList.remove('visible');
@@ -658,14 +665,22 @@
           return;
         }
 
+        // Update active dot
         dots.forEach(d => d.classList.remove('active'));
         dots[i].classList.add('active');
 
-        if (id === 'hero' && !heroHasLeft) {
-          heroArrow.classList.add('visible');
+        // Hero re-entering after having left — show briefly
+        if (id === 'hero' && heroHasLeft) {
+          showBriefly(heroArrow);
           return;
         }
 
+        // Hero on first arrival — keep visible (already set on load)
+        if (id === 'hero' && !heroHasLeft) {
+          return;
+        }
+
+        // All other sections — show arrows briefly
         showBriefly(downArrow);
         showBriefly(upArrow);
       });
@@ -674,10 +689,10 @@
     obs.observe(section);
   });
 
-  // ── Anticipatory arrows: show when user is 50%+ through a section ──
+  // ── Anticipatory arrows: show when 50%+ through a section ──
   container.addEventListener('scroll', () => {
     const scrollTop = container.scrollTop;
-    const vh = container.clientHeight;
+    const vh        = container.clientHeight;
 
     sections.forEach((id) => {
       const section   = document.getElementById(id);
@@ -690,7 +705,6 @@
           showBriefly(downArrow, 1500);
         }
       }
-
       if (progress > -0.5 && progress < 0) {
         if (upArrow) showBriefly(upArrow, 1500);
       }
@@ -707,7 +721,7 @@
   dots.forEach(dot => {
     dot.addEventListener('click', () => {
       const target = document.getElementById(dot.dataset.target);
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      if (target) container.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
     });
   });
 
@@ -715,11 +729,22 @@
   hints.forEach(btn => {
     btn.addEventListener('click', () => {
       const target = document.getElementById(btn.dataset.target);
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      if (target) {
+        container.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+      }
     });
   });
 
   // ── Keyboard support for flip circles ──
   document.querySelectorAll('.circle-wrap').forEach(circle => {
     circle.addEventListener('keydown', e => {
-      if (e.ke
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        circle.classList.toggle('flipped');
+      }
+    });
+  });
+</script>
+
+</body>
+  </html>
