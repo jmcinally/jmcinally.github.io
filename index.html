@@ -161,11 +161,15 @@
     }
 
     /* ── Scroll to explore ── */
+    .hero-scroll-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+
     #scroll-to-explore {
-      position: absolute;
-      bottom: 8.5rem;
-      left: 50%;
-      transform: translateX(-50%);
       font-family: 'Inter', sans-serif;
       font-size: 0.65rem;
       font-weight: 300;
@@ -176,11 +180,16 @@
       opacity: 1;
       transition: opacity 0.7s ease;
       pointer-events: none;
-      z-index: 10;
     }
 
     #scroll-to-explore.hidden {
       opacity: 0;
+    }
+
+    /* Override absolute positioning for the hero down arrow when inside hero-scroll-hint */
+    .hero-scroll-hint .scroll-hint {
+      position: static;
+      transform: none;
     }
 
     /* ── Progress dots ── */
@@ -502,21 +511,25 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
             LinkedIn
           </a>
-          <a href="/cdn-cgi/l/email-protection#bed4d3ddd7d0dfd2d2c790c9d1ccd5fed9d3dfd7d290ddd1d3" class="btn-outline">
+          <a href="mailto:jmcinally.work@gmail.com" class="btn-outline">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
             Email
           </a>
         </div>
       </div>
+
+      <!-- ↓ SCROLL TO EXPLORE — remove the block below if you decide you don't want it -->
+      <div class="hero-scroll-hint">
+        <p id="scroll-to-explore">Scroll to explore</p>
+        <button class="scroll-hint down" data-target="about" aria-label="Scroll to About">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <!-- ↑ end scroll to explore -->
+
     </div>
 
-    <button class="scroll-hint down always-visible" data-target="about" aria-label="Scroll to About">
-      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-    </button>
-
-    <!-- ↓ SCROLL TO EXPLORE — remove the block below if you decide you don't want it -->
-    <p id="scroll-to-explore">Scroll to explore</p>
-    <!-- ↑ end scroll to explore -->
+    
 
   </section>
 
@@ -627,7 +640,7 @@
 <script>
   const container  = document.getElementById('snap-container');
   const hints      = document.querySelectorAll('.scroll-hint');
-  const heroArrow  = document.querySelector('#hero .scroll-hint.down');
+  const heroArrow  = document.querySelector('#hero .hero-scroll-hint .scroll-hint');
   const scrollText = document.getElementById('scroll-to-explore');
   const dots       = document.querySelectorAll('.dot');
   const sections   = ['hero', 'about', 'impact'];
@@ -747,4 +760,4 @@
 </script>
 
 </body>
-  </html>
+</html>
